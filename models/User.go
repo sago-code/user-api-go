@@ -4,6 +4,7 @@ import (
 	"gorm.io/gorm"
 )
 
+// Modelo User representa a un usuario en la base de datos
 type User struct {
 	FirstName string `gorm:"type:varchar(50);not null"`
 	LastName  string `gorm:"type:varchar(50);not null"`

@@ -12,15 +12,19 @@ import (
 
 func main() {
 
+	//Database
 	db.DBConnection()
 
+	//Migrate the schema
 	db.DB.AutoMigrate(models.User{})
 
+	//Gorilla Mux
 	r := mux.NewRouter()
 
 	//Routes
 	r.HandleFunc("/", controllers.HomeHandler)
 	routes.UserRoutes(r)
 
+	//Server
 	http.ListenAndServe(":3000", r)
 }
