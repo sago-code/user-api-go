@@ -10,6 +10,29 @@ Este proyecto implementa una API RESTful para la gestión de usuarios, construid
 *   **Integración con Base de Datos**: Utiliza GORM para operaciones ORM con MySQL.
 *   **Enrutamiento**: Gestionado por `gorilla/mux`.
 *   **Recarga en Vivo (Live Reload)**: Configurado con `Air` para la recompilación automática y el reinicio del servidor al realizar cambios en el código.
+*   **Patrón Strategy**: Implementado para manejar diferentes estrategias de eliminación de usuarios (borrado lógico y permanente).
+
+## Patrones de Diseño Implementados
+
+### Patrón Strategy
+
+Este proyecto implementa el **Patrón Strategy** para manejar diferentes formas de eliminar usuarios:
+
+*   **¿Qué es?**: El patrón Strategy es un patrón de comportamiento que permite definir una familia de algoritmos, encapsular cada uno de ellos y hacerlos intercambiables. Esto permite que el algoritmo varíe independientemente de los clientes que lo utilizan.
+
+*   **¿Por qué se eligió?**: Se eligió este patrón porque tenemos dos estrategias diferentes para eliminar usuarios (borrado lógico y borrado permanente) y queremos desacoplar estos algoritmos de los controladores que los utilizan.
+
+*   **¿Cómo se implementó?**: 
+    - Se creó una interfaz `DeleteStrategy` que define el método `Delete`.
+    - Se implementaron dos estrategias concretas: `SoftDeleteStrategy` (borrado lógico) y `HardDeleteStrategy` (borrado permanente).
+    - Se creó un contexto `DeleteContext` que utiliza una estrategia para realizar la operación de eliminación.
+    - Los controladores utilizan el contexto con la estrategia apropiada según la operación requerida.
+
+*   **Beneficios obtenidos**:
+    - **Desacoplamiento**: Los algoritmos de eliminación están desacoplados de los controladores.
+    - **Extensibilidad**: Es fácil añadir nuevas estrategias de eliminación sin modificar los controladores existentes.
+    - **Mantenibilidad**: El código es más limpio y fácil de mantener al separar las responsabilidades.
+    - **Testabilidad**: Es más fácil probar cada estrategia de forma aislada.
 
 ## Requisitos
 
@@ -24,9 +47,7 @@ Este proyecto implementa una API RESTful para la gestión de usuarios, construid
 Este proyecto utiliza MySQL. Asegúrate de tener un servidor MySQL en ejecución. La cadena de conexión a la base de datos está definida en `db/connection.go`.
 
 ```go:db%2Fconnection.go
-// ... existing code ...
 var DSN = "root:@tcp(localhost:3306)/user-api-go?charset=utf8mb4&parseTime=True&loc=Local"
-// ... existing code ...
 ```
 Puedes modificar la variable DSN para que coincida con tu configuración de MySQL.
 

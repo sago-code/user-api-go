@@ -8,6 +8,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/sago-code/user-api-go/db"
 	"github.com/sago-code/user-api-go/models"
+	"github.com/sago-code/user-api-go/strategies"
 )
 
 func GetUsersHandler(w http.ResponseWriter, r *http.Request) {
@@ -69,13 +70,24 @@ func PutUsersHandler(w http.ResponseWriter, r *http.Request) {
 func SofDeleteUserHandler(w http.ResponseWriter, r *http.Request) {
 	var user models.User
 	params := mux.Vars(r)
-	db.DB.First(&user, params["id"])
-	if err := db.DB.First(&user, params["id"]).Error; err != nil {
+
+	id, err := strconv.Atoi(params["id"])
+	if err != nil {
+		http.Error(w, "Invalid user ID", http.StatusBadRequest)
+		return
+	}
+
+	if err := db.DB.First(&user, id).Error; err != nil {
 		http.Error(w, "User not found", http.StatusNotFound)
 		return
 	}
 
-	db.DB.Delete(&user)
+	deleteContext := strategies.NewDeleteContext(db.DB, &strategies.SoftDeleteStrategy{})
+	if err := deleteContext.DeleteUser(&user); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	w.WriteHeader(http.StatusOK)
 }
 
@@ -94,6 +106,11 @@ func DeleteUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	db.DB.Unscoped().Delete(&user)
+	deleteContext := strategies.NewDeleteContext(db.DB, &strategies.HardDeleteStrategy{})
+	if err := deleteContext.DeleteUser(&user); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	w.WriteHeader(http.StatusOK)
 }
